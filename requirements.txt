@@ -1,0 +1,13 @@
+click==8.1.3
+cmake==3.25.2
+cryptocode==0.1
+Flask==2.2.2
+Flask-Cors==3.0.10
+itsdangerous==2.1.2
+Jinja2==3.1.2
+MarkupSafe==2.1.2
+psycopg2-binary==2.9.5
+pycryptodomex==3.17
+python-dotenv==0.21.0
+six==1.16.0
+Werkzeug==2.2.3
