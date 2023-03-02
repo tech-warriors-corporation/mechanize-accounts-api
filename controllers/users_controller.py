@@ -16,9 +16,8 @@ class UsersController(Controller):
     def create(self):
         try:
             data = request.get_json()
+            id = self.__users_service.create(data['name'], data['email'], data['password'], data['role'])
 
-            self.__users_service.create(data['name'], data['email'], data['password'], data['role'])
-
-            return generate_response(status_code=201)
+            return generate_response(id, 201)
         except Exception as error:
             return generate_response(str(error), 400)
