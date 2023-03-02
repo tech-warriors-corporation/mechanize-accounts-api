@@ -12,6 +12,7 @@ class UsersController(Controller):
 
     def register_routes(self):
         self._app.add_url_rule('/api/accounts/users', 'create', self.create, methods=['POST'])
+        self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
 
     def create(self):
         try:
@@ -19,5 +20,13 @@ class UsersController(Controller):
             id = self.__users_service.create(data['name'], data['email'], data['password'], data['role'])
 
             return generate_response(id, 201)
+        except Exception as error:
+            return generate_response(str(error), 400)
+
+    def get(self, id: int):
+        try:
+            user = self.__users_service.get(id)
+
+            return generate_response(user, 200)
         except Exception as error:
             return generate_response(str(error), 400)

@@ -18,3 +18,16 @@ class UserRepository:
         self.__connection.close()
 
         return id
+
+    def get(self, id: int):
+        self.__connection = get_connection()
+        cursor = self.__connection.cursor()
+
+        cursor.execute(f"SELECT name, email, role FROM users WHERE id = {id}")
+        row = cursor.fetchone()
+        user = { 'id': id, 'name': row[0], 'email': row[1], 'role': row[2] }
+
+        cursor.close()
+        self.__connection.close()
+
+        return user
