@@ -3,7 +3,7 @@ Microservice of Accounts for Mechanize (API).
 
 ## About
 - Read the [architecture](https://github.com/tech-warriors-corporation/mechanize-api#architecture) project;
-- Database name is _mechanize_accounts_.
+- Database name is _mechanize_accounts_;
 - Prefix in routes should be **/api/accounts**.
 
 ## Setup
