@@ -21,6 +21,4 @@ class UsersController(Controller):
 
             return generate_response(status_code=201)
         except Exception as error:
-            print(error)
-
-            return generate_response(status_code=400)
+            return generate_response(str(error), 400)
