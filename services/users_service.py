@@ -12,7 +12,7 @@ class UsersService:
     def __init__(self, user_repository: UserRepository):
         self.__user_repository = user_repository
 
-    def create(self, name: str, email: str, password: str, role: UserRoleEnum):
+    def create(self, name: str, email: str, password: str, role: UserRoleEnum) -> int:
         if not name:
             raise ValueError('Name is required')
 
@@ -25,7 +25,16 @@ class UsersService:
         if role != UserRoleEnum.DRIVER.value and role != UserRoleEnum.MECHANIC.value:
             raise ValueError('Role is invalid')
 
-        self.__user_repository.create(name, email, encrypt(password, environ.get("CRYPTOCODE_PASSWORD")), role)
+        return self.__user_repository.create(name, email, encrypt(password, environ.get("CRYPTOCODE_PASSWORD")), role)
+
+    def get(self, id: int):
+        if not id:
+            raise ValueError('Id is required')
+
+        if not isinstance(id, int):
+            raise ValueError('Id should be integer')
+
+        return self.__user_repository.get(id)
 
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
