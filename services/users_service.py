@@ -1,8 +1,9 @@
 from repositories.user_repository import UserRepository
-from cryptocode import encrypt
 from os import environ
 from enum import Enum
 from re import match
+import bcrypt
+
 
 class UserRoleEnum(Enum):
     DRIVER = 'driver'
@@ -25,7 +26,15 @@ class UsersService:
         if role != UserRoleEnum.DRIVER.value and role != UserRoleEnum.MECHANIC.value:
             raise ValueError('Role is invalid')
 
-        return self.__user_repository.create(name, email, encrypt(password, environ.get("CRYPTOCODE_PASSWORD")), role)
+        # Create a salt value using our CRYPTOCODE_PASSWORD
+        salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        # Creating a Hash of the password using the generated salt value
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt.encode('utf-8')).decode('utf-8')
+        # print(hashed_password) //TODO delete later
+
+        return self.__user_repository.create(name, email, hashed_password, role)
+
 
     def get(self, id: int):
         if not id:
@@ -36,6 +45,15 @@ class UsersService:
 
         return self.__user_repository.get(id)
 
+    def get_by_email(self, email: str): # TODO: Validate when email is not found
+        if not email:
+            raise ValueError('Email is required')
+
+        if not isinstance(email, str):
+            raise ValueError('email should be an String')
+
+        return self.__user_repository.get_by_email(email)
+
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
                any(char.isupper() for char in password) and \
@@ -44,3 +62,19 @@ class UsersService:
 
     def __is_valid_email(self, email: str) -> bool:
         return match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None
+
+
+
+    def authenticate(self, email: str, password: str):
+        if not self.__is_valid_email(email):
+            raise ValueError('Invalid email')
+
+        user = self.__user_repository.get_by_email(email)
+
+        check_pwd = bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8'))
+        print(check_pwd)
+        if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            raise ValueError('Invalid credentials')
+
+        return user['id']
+
