@@ -45,7 +45,7 @@ class UsersController(Controller):
 
             return generate_response({"access_token": access_token}, 200)
         except ValueError as error:
-            return generate_response(str(error), 400)
+            return generate_response(str(error), 401)
 
 
     def get_by_email(self, email: str):

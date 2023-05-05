@@ -31,7 +31,6 @@ class UsersService:
 
         # Creating a Hash of the password using the generated salt value
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt.encode('utf-8')).decode('utf-8')
-        # print(hashed_password) //TODO delete later
 
         return self.__user_repository.create(name, email, hashed_password, role)
 
@@ -45,7 +44,7 @@ class UsersService:
 
         return self.__user_repository.get(id)
 
-    def get_by_email(self, email: str): # TODO: Validate when email is not found
+    def get_by_email(self, email: str):
         if not email:
             raise ValueError('Email is required')
 
@@ -70,6 +69,8 @@ class UsersService:
             raise ValueError('Invalid email')
 
         user = self.__user_repository.get_by_email(email)
+        if not user:
+            raise ValueError('Invalid credentials')
 
         check_pwd = bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8'))
         print(check_pwd)
