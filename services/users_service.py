@@ -10,8 +10,11 @@ class UserRoleEnum(Enum):
     MECHANIC = 'mechanic'
 
 class UsersService:
+
+    __charset = 'utf-8'
     def __init__(self, user_repository: UserRepository):
         self.__user_repository = user_repository
+
 
     def create(self, name: str, email: str, password: str, role: UserRoleEnum) -> int:
         if not name:
@@ -26,11 +29,8 @@ class UsersService:
         if role != UserRoleEnum.DRIVER.value and role != UserRoleEnum.MECHANIC.value:
             raise ValueError('Role is invalid')
 
-        # Create a salt value using our CRYPTOCODE_PASSWORD
-        salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-        # Creating a Hash of the password using the generated salt value
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt.encode('utf-8')).decode('utf-8')
+        salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode(self.__charset), bcrypt.gensalt()).decode(self.__charset)
+        hashed_password = bcrypt.hashpw(password.encode(self.__charset), salt.encode(self.__charset)).decode(self.__charset)
 
         return self.__user_repository.create(name, email, hashed_password, role)
 
@@ -72,9 +72,7 @@ class UsersService:
         if not user:
             raise ValueError('Invalid credentials')
 
-        check_pwd = bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8'))
-        print(check_pwd)
-        if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        if not user or not bcrypt.checkpw(password.encode(self.__charset), user['password'].encode(self.__charset)):
             raise ValueError('Invalid credentials')
 
         return user['id']

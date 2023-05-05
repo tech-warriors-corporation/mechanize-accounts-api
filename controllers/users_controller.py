@@ -15,7 +15,6 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/users', 'create', self.create, methods=['POST'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
         self._app.add_url_rule('/api/accounts/login', 'login', self.login, methods=['POST'])
-        self._app.add_url_rule('/api/accounts/users/getByEmail/<string:email>', 'get_by_email', self.get_by_email, methods=['GET'])
 
     def create(self):
         try:
@@ -43,7 +42,7 @@ class UsersController(Controller):
             user_id = self.__users_service.authenticate(email, password)
             access_token = create_access_token(identity=user_id)
 
-            return generate_response({"access_token": access_token}, 200)
+            return generate_response(access_token, 200)
         except ValueError as error:
             return generate_response(str(error), 401)
 
