@@ -1,3 +1,4 @@
+from flask_jwt_extended import create_access_token
 from services.users_service import UsersService
 from response import generate_response
 from flask import request
@@ -13,6 +14,7 @@ class UsersController(Controller):
     def register_routes(self):
         self._app.add_url_rule('/api/accounts/users', 'create', self.create, methods=['POST'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
+        self._app.add_url_rule('/api/accounts/login', 'login', self.login, methods=['POST'])
 
     def create(self):
         try:
@@ -26,6 +28,28 @@ class UsersController(Controller):
     def get(self, id: int):
         try:
             user = self.__users_service.get(id)
+
+            return generate_response(user, 200)
+        except Exception as error:
+            return generate_response(str(error), 400)
+
+    def login(self):
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
+
+            user_id = self.__users_service.authenticate(email, password)
+            access_token = create_access_token(identity=user_id)
+
+            return generate_response(access_token, 200)
+        except ValueError as error:
+            return generate_response(str(error), 401)
+
+
+    def get_by_email(self, email: str):
+        try:
+            user = self.__users_service.get_by_email(email)
 
             return generate_response(user, 200)
         except Exception as error:
