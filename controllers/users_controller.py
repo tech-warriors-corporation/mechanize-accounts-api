@@ -38,19 +38,18 @@ class UsersController(Controller):
             data = request.get_json()
             email = data.get('email')
             password = data.get('password')
+            user = self.__users_service.authenticate(email, password)
+            access_token = create_access_token(identity=user)
 
-            user_id = self.__users_service.authenticate(email, password)
-            access_token = create_access_token(identity=user_id)
-
-            return generate_response(access_token, 200)
+            return generate_response(
+                {
+                    "access_token": access_token,
+                    "user": {
+                        "name": user["name"],
+                        "role": user["role"],
+                    }
+                },
+                200
+            )
         except ValueError as error:
             return generate_response(str(error), 401)
-
-
-    def get_by_email(self, email: str):
-        try:
-            user = self.__users_service.get_by_email(email)
-
-            return generate_response(user, 200)
-        except Exception as error:
-            return generate_response(str(error), 400)
