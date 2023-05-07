@@ -36,14 +36,14 @@ class UserRepository:
         self.__connection = get_connection()
         cursor = self.__connection.cursor()
 
-        cursor.execute(f"SELECT name, email, password, role FROM users WHERE email = '{email}'")
+        cursor.execute(f"SELECT id, name, email, password, role FROM users WHERE email = '{email}'")
 
         row = cursor.fetchone()
 
         if not row:
             return None
 
-        user = { 'name': row[0], 'email': row[1], 'password': row[2], 'role': row[3] }
+        user = { 'id': row[0], 'name': row[1], 'email': row[2], 'password': row[3], 'role': row[4] }
 
         cursor.close()
         self.__connection.close()

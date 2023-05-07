@@ -45,6 +45,7 @@ class UsersController(Controller):
                 {
                     "access_token": access_token,
                     "user": {
+                        "id": user["id"],
                         "name": user["name"],
                         "role": user["role"],
                     }
