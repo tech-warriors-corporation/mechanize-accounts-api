@@ -4,7 +4,7 @@ from response import generate_response
 from flask import request
 from controllers.controller import Controller
 from flask import Flask
-from request import should_be_logged, has_valid_token
+from request import should_be_logged, has_valid_token, should_be_valid_client_id
 
 class UsersController(Controller):
     def __init__(self, app: Flask, users_service: UsersService):
@@ -18,6 +18,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/has-valid-token', 'has_valid_token', self.has_valid_token, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
 
+    @should_be_valid_client_id
     def create(self):
         try:
             data = request.get_json()
@@ -27,13 +28,14 @@ class UsersController(Controller):
         except Exception as error:
             return generate_response(str(error), 400)
 
+    @should_be_valid_client_id
     def login(self):
         try:
             data = request.get_json()
             email = data.get('email')
             password = data.get('password')
             user = self.__users_service.authenticate(email, password)
-            access_token = create_access_token(identity=user)
+            access_token = create_access_token(identity=user, expires_delta=False)
 
             return generate_response(
                 {
@@ -49,6 +51,7 @@ class UsersController(Controller):
         except ValueError as error:
             return generate_response(str(error), 401)
 
+    @should_be_valid_client_id
     def has_valid_token(self):
         try:
             token = request.headers.get('Authorization')
@@ -61,6 +64,7 @@ class UsersController(Controller):
         except:
             return generate_response(False, 498)
 
+    @should_be_valid_client_id
     @should_be_logged
     def get(self, id: int):
         try:
