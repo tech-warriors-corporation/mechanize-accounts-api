@@ -23,6 +23,23 @@ def has_valid_token(token: str):
     except:
         return False
 
+def is_driver(token: str):
+    try:
+        user = decode_token(token)['sub']
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(f"SELECT id FROM users WHERE email='{user['email']}' AND role='driver'")
+
+        result = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        return result is not None
+    except:
+        return False
+
 def should_be_logged(callback):
     def secure_function(*args, **kwargs):
         token = request.headers.get('Authorization')
