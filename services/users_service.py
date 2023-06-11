@@ -3,10 +3,7 @@ from os import environ
 from enum import Enum
 from re import match
 import bcrypt
-
-class UserRoleEnum(Enum):
-    DRIVER = 'driver'
-    MECHANIC = 'mechanic'
+from enums.user_role_enum import UserRoleEnum
 
 class UsersService:
     __charset = 'utf-8'

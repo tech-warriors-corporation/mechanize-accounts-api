@@ -3,6 +3,7 @@ from response import generate_response
 from flask_jwt_extended import decode_token
 from database import get_connection
 from os import environ
+from enums.user_role_enum import UserRoleEnum
 
 valid_client_id = environ.get('CLIENT_ID')
 
@@ -29,7 +30,7 @@ def is_driver(token: str):
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(f"SELECT id FROM users WHERE email='{user['email']}' AND role='driver'")
+        cursor.execute(f"SELECT id FROM users WHERE email='{user['email']}' AND role='{UserRoleEnum.DRIVER.value}'")
 
         result = cursor.fetchone()
 
