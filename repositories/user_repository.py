@@ -1,4 +1,5 @@
 from database import get_connection
+from flask_jwt_extended import decode_token
 
 class UserRepository:
     def __init__(self):
@@ -44,6 +45,25 @@ class UserRepository:
             return None
 
         user = { 'id': row[0], 'name': row[1], 'email': row[2], 'password': row[3], 'role': row[4] }
+
+        cursor.close()
+        self.__connection.close()
+
+        return user
+
+    def get_user_by_token(self, token: str):
+        self.__connection = get_connection()
+        cursor = self.__connection.cursor()
+        user_from_token = decode_token(token)['sub']
+
+        cursor.execute(f"SELECT id, name, email, password, role FROM users WHERE id = '{user_from_token['id']}' AND email = '{user_from_token['email']}' AND password = '{user_from_token['password']}'")
+
+        result = cursor.fetchone()
+
+        if not result:
+            return None
+
+        user = { 'id': result[0], 'name': result[1], 'email': result[2], 'password': result[3], 'role': result[4] }
 
         cursor.close()
         self.__connection.close()

@@ -58,6 +58,12 @@ class UsersService:
 
         return user
 
+    def get_user_by_token(self, token: str):
+        if not token:
+            raise ValueError('Token is required')
+
+        return self.__user_repository.get_user_by_token(token)
+
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
                any(char.isupper() for char in password) and \

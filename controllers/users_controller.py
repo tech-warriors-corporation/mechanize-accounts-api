@@ -16,6 +16,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/users', 'create', self.create, methods=['POST'])
         self._app.add_url_rule('/api/accounts/login', 'login', self.login, methods=['POST'])
         self._app.add_url_rule('/api/accounts/has-valid-token', 'has_valid_token', self.has_valid_token, methods=['GET'])
+        self._app.add_url_rule('/api/accounts/get-user-by-token', 'get_user_by_token', self.get_user_by_token, methods=['GET'])
         self._app.add_url_rule('/api/accounts/is-driver', 'is_driver', self.is_driver, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
 
@@ -36,21 +37,23 @@ class UsersController(Controller):
             email = data.get('email')
             password = data.get('password')
             user = self.__users_service.authenticate(email, password)
-            access_token = create_access_token(identity=user, expires_delta=False)
 
-            return generate_response(
-                {
-                    "access_token": access_token,
-                    "user": {
-                        "id": user["id"],
-                        "name": user["name"],
-                        "role": user["role"],
-                    }
-                },
-                200
-            )
+            return generate_response(self.__mount_user_response(user), 200)
         except ValueError as error:
             return generate_response(str(error), 401)
+
+    @should_be_valid_client_id
+    def get_user_by_token(self):
+        try:
+            token = request.headers.get('Authorization')
+            user = self.__users_service.get_user_by_token(token)
+
+            if not user:
+                return generate_response(None, 400)
+
+            return generate_response(self.__mount_user_response(user), 200)
+        except:
+            return generate_response(None, 400)
 
     @should_be_valid_client_id
     def has_valid_token(self):
@@ -87,3 +90,13 @@ class UsersController(Controller):
             return generate_response(user, 200)
         except Exception as error:
             return generate_response(str(error), 400)
+
+    def __mount_user_response(self, user):
+        return {
+            "access_token": create_access_token(identity=user, expires_delta=False),
+            "user": {
+                "id": user["id"],
+                "name": user["name"],
+                "role": user["role"],
+            }
+        }
