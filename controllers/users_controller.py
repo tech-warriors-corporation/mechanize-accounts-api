@@ -29,7 +29,8 @@ class UsersController(Controller):
 
             return generate_response(id, 201)
         except Exception as error:
-            return generate_response(str(error), 400)
+            print(error)
+            return generate_response(status_code=400)
 
     @should_be_valid_client_id
     def login(self):
@@ -40,8 +41,9 @@ class UsersController(Controller):
             user = self.__users_service.authenticate(email, password)
 
             return generate_response(self.__mount_user_response(user), 200)
-        except ValueError as error:
-            return generate_response(str(error), 401)
+        except Exception as error:
+            print(error)
+            return generate_response(status_code=401)
 
     @should_be_valid_client_id
     def get_user_by_token(self):
@@ -50,11 +52,11 @@ class UsersController(Controller):
             user = self.__users_service.get_user_by_token(token)
 
             if not user:
-                return generate_response(None, 400)
+                return generate_response(status_code=400)
 
             return generate_response(self.__mount_user_response(user), 200)
         except:
-            return generate_response(None, 400)
+            return generate_response(status_code=400)
 
     @should_be_valid_client_id
     def has_valid_token(self):
@@ -103,7 +105,8 @@ class UsersController(Controller):
 
             return generate_response(user, 200)
         except Exception as error:
-            return generate_response(str(error), 400)
+            print(error)
+            return generate_response(status_code=400)
 
     def __mount_user_response(self, user):
         return {
