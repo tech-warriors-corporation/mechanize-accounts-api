@@ -4,7 +4,7 @@ from response import generate_response
 from flask import request
 from controllers.controller import Controller
 from flask import Flask
-from request import should_be_logged, has_valid_token, should_be_valid_client_id, is_driver
+from request import should_be_logged, has_valid_token, should_be_valid_client_id, is_driver, is_mechanic
 
 class UsersController(Controller):
     def __init__(self, app: Flask, users_service: UsersService):
@@ -18,6 +18,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/has-valid-token', 'has_valid_token', self.has_valid_token, methods=['GET'])
         self._app.add_url_rule('/api/accounts/get-user-by-token', 'get_user_by_token', self.get_user_by_token, methods=['GET'])
         self._app.add_url_rule('/api/accounts/is-driver', 'is_driver', self.is_driver, methods=['GET'])
+        self._app.add_url_rule('/api/accounts/is-mechanic', 'is_mechanic', self.is_mechanic, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
 
     @should_be_valid_client_id
@@ -75,6 +76,19 @@ class UsersController(Controller):
             token = request.headers.get('Authorization')
 
             if not is_driver(token):
+                return generate_response(False, 401)
+
+            return generate_response(True, 200)
+        except:
+            return generate_response(False, 401)
+
+    @should_be_valid_client_id
+    @should_be_logged
+    def is_mechanic(self):
+        try:
+            token = request.headers.get('Authorization')
+
+            if not is_mechanic(token):
                 return generate_response(False, 401)
 
             return generate_response(True, 200)
