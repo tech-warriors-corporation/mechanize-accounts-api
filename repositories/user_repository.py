@@ -69,3 +69,19 @@ class UserRepository:
         self.__connection.close()
 
         return user
+
+    def get_user_name_by_id(self, id: int) -> str:
+        self.__connection = get_connection()
+        cursor = self.__connection.cursor()
+
+        cursor.execute(f"SELECT name FROM users WHERE id = {id}")
+
+        result = cursor.fetchone()
+
+        if not result:
+            return ''
+
+        cursor.close()
+        self.__connection.close()
+
+        return result[0]

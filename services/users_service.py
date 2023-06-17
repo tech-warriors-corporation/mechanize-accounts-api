@@ -64,6 +64,15 @@ class UsersService:
 
         return self.__user_repository.get_user_by_token(token)
 
+    def get_user_name_by_id(self, id: int) -> str:
+        if not id:
+            raise ValueError('Id is required')
+
+        if not isinstance(id, int):
+            raise ValueError('Id should be integer')
+
+        return self.__user_repository.get_user_name_by_id(id)
+
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
                any(char.isupper() for char in password) and \
