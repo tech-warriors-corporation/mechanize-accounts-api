@@ -70,6 +70,9 @@ class UserRepository:
 
         return user
 
+    def get_id_by_token(self, token: str):
+        return decode_token(token)['sub']['id']
+
     def get_user_name_by_id(self, id: int) -> str:
         self.__connection = get_connection()
         cursor = self.__connection.cursor()

@@ -64,6 +64,9 @@ class UsersService:
 
         return self.__user_repository.get_user_by_token(token)
 
+    def get_id_by_token(self, token: str):
+        return self.__user_repository.get_id_by_token(token)
+
     def get_user_name_by_id(self, id: int) -> str:
         if not id:
             raise ValueError('Id is required')
