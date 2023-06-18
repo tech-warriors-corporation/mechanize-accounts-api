@@ -20,6 +20,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/is-driver', 'is_driver', self.is_driver, methods=['GET'])
         self._app.add_url_rule('/api/accounts/is-mechanic', 'is_mechanic', self.is_mechanic, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
+        self._app.add_url_rule('/api/accounts/users/<int:id>/user-name', 'get_user_name_by_id', self.get_user_name_by_id, methods=['GET'])
 
     @should_be_valid_client_id
     def create(self):
@@ -104,6 +105,15 @@ class UsersController(Controller):
             user = self.__users_service.get(id)
 
             return generate_response(user, 200)
+        except Exception as error:
+            print(error)
+            return generate_response(status_code=400)
+
+    @should_be_valid_client_id
+    @should_be_logged
+    def get_user_name_by_id(self, id: int):
+        try:
+            return generate_response(self.__users_service.get_user_name_by_id(id), 200)
         except Exception as error:
             print(error)
             return generate_response(status_code=400)
