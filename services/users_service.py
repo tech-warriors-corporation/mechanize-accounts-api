@@ -4,6 +4,7 @@ from enum import Enum
 from re import match
 import bcrypt
 from enums.user_role_enum import UserRoleEnum
+from texts import sanitize
 
 class UsersService:
     __charset = 'utf-8'
@@ -26,6 +27,8 @@ class UsersService:
 
         salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode(self.__charset), bcrypt.gensalt()).decode(self.__charset)
         hashed_password = bcrypt.hashpw(password.encode(self.__charset), salt.encode(self.__charset)).decode(self.__charset)
+        name = sanitize(name)
+        email = sanitize(email)
 
         return self.__user_repository.create(name, email, hashed_password, role)
 
@@ -45,12 +48,15 @@ class UsersService:
         if not isinstance(email, str):
             raise ValueError('Email should be string')
 
+        email = sanitize(email)
+
         return self.__user_repository.get_by_email(email)
 
     def authenticate(self, email: str, password: str):
         if not self.__is_valid_email(email):
             raise ValueError('Invalid email')
 
+        email = sanitize(email)
         user = self.__user_repository.get_by_email(email)
 
         if not user or not bcrypt.checkpw(password.encode(self.__charset), user['password'].encode(self.__charset)):
