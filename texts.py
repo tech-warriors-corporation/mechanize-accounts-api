@@ -21,4 +21,4 @@ def sanitize(text: str) -> str:
     text = pattern.sub(r'', text)
     text = bleach.clean(text, strip=True).replace("\n", "")
 
-    return text
+    return text.strip()
