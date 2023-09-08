@@ -1,7 +1,11 @@
 from database import get_connection
 from flask_jwt_extended import decode_token
+from enums.error_type_enum import ErrorTypeEnum
+import bcrypt
 
 class UserRepository:
+    __charset = 'utf-8'
+
     def __init__(self):
         self.__connection = None
 
@@ -88,3 +92,29 @@ class UserRepository:
         self.__connection.close()
 
         return result[0]
+
+    def change_password(self, id: int, current_password: str, encrypted_new_password: str) -> bool:
+        self.__connection = get_connection()
+        cursor = self.__connection.cursor()
+
+        cursor.execute(f"SELECT password FROM users WHERE id = {id}")
+
+        password = cursor.fetchone()[0]
+
+        if not bcrypt.checkpw(current_password.encode(self.__charset), password.encode(self.__charset)):
+            raise ValueError(ErrorTypeEnum.INVALID_CURRENT_PASSWORD.value)
+
+        cursor.execute(f"UPDATE users SET password = %s WHERE id = %s AND password = %s RETURNING id", (encrypted_new_password, id, password))
+
+        response = cursor.fetchone()
+
+        if response is None:
+            raise ValueError(ErrorTypeEnum.INVALID_CURRENT_PASSWORD.value)
+
+        result = response[0]
+
+        self.__connection.commit()
+        cursor.close()
+        self.__connection.close()
+
+        return isinstance(result, int)

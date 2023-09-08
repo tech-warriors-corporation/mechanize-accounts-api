@@ -22,6 +22,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/is-mechanic', 'is_mechanic', self.is_mechanic, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>/user-name', 'get_user_name_by_id', self.get_user_name_by_id, methods=['GET'])
+        self._app.add_url_rule('/api/accounts/change-password', 'change_password', self.change_password, methods=['PATCH'])
 
     @should_be_valid_client_id
     def create(self):
@@ -129,6 +130,25 @@ class UsersController(Controller):
         except Exception as error:
             print(error)
             return generate_response(status_code=400)
+
+    @should_be_valid_client_id
+    @should_be_logged
+    def change_password(self):
+        try:
+            data = request.get_json()
+            token = request.headers.get('Authorization')
+            user = self.__users_service.get_user_by_token(token)
+            result = self.__users_service.change_password(user['id'], data['current_password'], data['new_password'], data['new_password_confirmation'])
+
+            if result:
+                user = self.__users_service.get_by_email(user['email'])
+
+            return generate_response(
+                { 'changed': result, 'data': self.__mount_user_response(user) if result else None, 'error_type': None },
+                200 if result else 206
+            )
+        except Exception as error:
+            return generate_response({ 'changed': False, 'data': None, 'error_type': str(error) }, 206)
 
     def __mount_user_response(self, user):
         return {
