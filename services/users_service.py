@@ -4,6 +4,7 @@ from enum import Enum
 from re import match
 import bcrypt
 from enums.user_role_enum import UserRoleEnum
+from enums.error_type_enum import ErrorTypeEnum
 from texts import sanitize
 
 class UsersService:
@@ -25,8 +26,7 @@ class UsersService:
         if role != UserRoleEnum.DRIVER.value and role != UserRoleEnum.MECHANIC.value:
             raise ValueError('Role is invalid')
 
-        salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode(self.__charset), bcrypt.gensalt()).decode(self.__charset)
-        hashed_password = bcrypt.hashpw(password.encode(self.__charset), salt.encode(self.__charset)).decode(self.__charset)
+        hashed_password = self.__hash_password(password)
         name = sanitize(name)
         email = sanitize(email)
 
@@ -82,6 +82,46 @@ class UsersService:
 
         return self.__user_repository.get_user_name_by_id(id)
 
+    def change_password(self, id: int, current_password: str, new_password: str, new_password_confirmation: str) -> bool:
+        if not id:
+            raise ValueError('Id is required')
+
+        if not current_password:
+            raise ValueError('Current password is required')
+
+        if not new_password:
+            raise ValueError('New password is required')
+
+        if not new_password_confirmation:
+            raise ValueError('New password confirmation is required')
+
+        if not isinstance(id, int):
+            raise ValueError('Id should be integer')
+
+        if not isinstance(current_password, str):
+            raise ValueError('Current password should be string')
+
+        if not isinstance(new_password, str):
+            raise ValueError('New password should be string')
+
+        if not isinstance(new_password_confirmation, str):
+            raise ValueError('New password confirmation should be string')
+
+        current_password = sanitize(current_password)
+        new_password = sanitize(new_password)
+        new_password_confirmation = sanitize(new_password_confirmation)
+
+        if new_password != new_password_confirmation:
+            raise ValueError('New password is different from new password confirmation')
+
+        if not self.__is_valid_password(new_password):
+            raise ValueError(ErrorTypeEnum.INVALID_NEW_PASSWORD.value)
+
+        if not self.__is_valid_password(new_password_confirmation):
+            raise ValueError(ErrorTypeEnum.INVALID_NEW_PASSWORD_CONFIRMATION.value)
+
+        return self.__user_repository.change_password(id, current_password, self.__hash_password(new_password))
+
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
                any(char.isupper() for char in password) and \
@@ -90,3 +130,8 @@ class UsersService:
 
     def __is_valid_email(self, email: str) -> bool:
         return match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None
+
+    def __hash_password(self, password: str):
+        salt = bcrypt.hashpw(environ.get('CRYPTOCODE_PASSWORD').encode(self.__charset), bcrypt.gensalt()).decode(self.__charset)
+
+        return bcrypt.hashpw(password.encode(self.__charset), salt.encode(self.__charset)).decode(self.__charset)
