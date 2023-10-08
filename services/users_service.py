@@ -122,6 +122,15 @@ class UsersService:
 
         return self.__user_repository.change_password(id, current_password, self.__hash_password(new_password))
 
+    def delete_account(self, id: int) -> bool:
+        if not id:
+            raise ValueError('Id is required')
+
+        if not isinstance(id, int):
+            raise ValueError('Id should be integer')
+
+        return self.__user_repository.delete_account(id)
+
     def __is_valid_password(self, password: str) -> bool:
         return len(password) >= 8 and \
                any(char.isupper() for char in password) and \

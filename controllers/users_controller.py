@@ -23,6 +23,7 @@ class UsersController(Controller):
         self._app.add_url_rule('/api/accounts/users/<int:id>', 'get', self.get, methods=['GET'])
         self._app.add_url_rule('/api/accounts/users/<int:id>/user-name', 'get_user_name_by_id', self.get_user_name_by_id, methods=['GET'])
         self._app.add_url_rule('/api/accounts/change-password', 'change_password', self.change_password, methods=['PATCH'])
+        self._app.add_url_rule('/api/accounts/delete-account', 'delete_account', self.delete_account, methods=['DELETE'])
 
     @should_be_valid_client_id
     def create(self):
@@ -149,6 +150,18 @@ class UsersController(Controller):
             )
         except Exception as error:
             return generate_response({ 'changed': False, 'data': None, 'error_type': str(error) }, 206)
+
+    @should_be_valid_client_id
+    @should_be_logged
+    def delete_account(self):
+        try:
+            token = request.headers.get('Authorization')
+            user = self.__users_service.get_user_by_token(token)
+
+            return generate_response(self.__users_service.delete_account(user['id']), 200)
+        except Exception as error:
+            print(error)
+            return generate_response(False, 400)
 
     def __mount_user_response(self, user):
         return {

@@ -118,3 +118,20 @@ class UserRepository:
         self.__connection.close()
 
         return isinstance(result, int)
+
+    def delete_account(self, id: int) -> bool:
+        self.__connection = get_connection()
+        cursor = self.__connection.cursor()
+
+        cursor.execute(f"DELETE FROM users WHERE id = {id} RETURNING true")
+
+        response = cursor.fetchone()[0]
+
+        self.__connection.commit()
+        cursor.close()
+        self.__connection.close()
+
+        if not response:
+            return False
+
+        return response
